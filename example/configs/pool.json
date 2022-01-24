@@ -1,0 +1,108 @@
+{
+    "assignment_max_duration_seconds": 120,
+    "defaults": {
+        "default_overlap_for_new_tasks": 3,
+        "default_overlap_for_new_task_suites": 3
+    },
+    "filter": {
+        "and": [
+            {
+                "category": "profile",
+                "key": "languages",
+                "operator": "IN",
+                "value": "EN"
+            },
+            {
+                "or": [
+                    {
+                        "category": "computed",
+                        "key": "client_type",
+                        "operator": "EQ",
+                        "value": "TOLOKA_APP"
+                    },
+                    {
+                        "category": "computed",
+                        "key": "client_type",
+                        "operator": "EQ",
+                        "value": "BROWSER"
+                    }
+                ]
+            }
+        ]
+    },
+    "may_contain_adult_content": false,
+    "mixer_config": {
+        "golden_tasks_count": 1,
+        "real_tasks_count": 4,
+        "training_tasks_count": 0
+    },
+    "private_name": "Is this headline clickbait?",
+    "quality_control": {
+        "configs": [
+            {
+                "collector_config": {
+                    "parameters": {
+                        "fast_submit_threshold_seconds": 30,
+                        "history_size": 5
+                    },
+                    "type": "ASSIGNMENT_SUBMIT_TIME"
+                },
+                "rules": [
+                    {
+                        "action": {
+                            "parameters": {
+                                "duration_unit": "PERMANENT",
+                                "private_comment": "bad quality",
+                                "scope": "POOL"
+                            },
+                            "type": "RESTRICTION_V2"
+                        },
+                        "conditions": [
+                            {
+                                "key": "fast_submitted_count",
+                                "operator": "GTE",
+                                "value": 2
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "collector_config": {
+                    "parameters": {
+                        "history_size": 10
+                    },
+                    "type": "GOLDEN_SET"
+                },
+                "rules": [
+                    {
+                        "action": {
+                            "parameters": {
+                                "duration_unit": "PERMANENT",
+                                "private_comment": "bad quality",
+                                "scope": "POOL"
+                            },
+                            "type": "RESTRICTION_V2"
+                        },
+                        "conditions": [
+                            {
+                                "key": "golden_set_correct_answers_rate",
+                                "operator": "LTE",
+                                "value": 90.0
+                            },
+                            {
+                                "key": "golden_set_answers_count",
+                                "operator": "GTE",
+                                "value": 1
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "training_requirement": {
+            "training_passing_skill_value": 90
+        }
+    },
+    "reward_per_assignment": 0.05
+}

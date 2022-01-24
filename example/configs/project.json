@@ -1,0 +1,37 @@
+{
+    "assignments_issuing_type": "AUTOMATED",
+    "public_description": "Look at the a news headline and decide if it is clickbait or not.",
+    "public_instructions": "<h2>About the task</h2>\nIn this task you need to classify headlines on 2 categories: Clickbait or Not clickbait.<br>\n<h2>What is Clickbait headline?</h2>\nClickbait refers to the practice of writing sensationalized or misleading headlines.\n<b>Clickbait headline<b> designed to make readers want to click on a hyperlink\nespecially when the link leads to content of dubious value. Typically clickbait titles cover not very useful content,\nso visitors tend not to stay for too long, that's why it's bad.\n",
+    "public_name": "Is this headline clickbait?",
+    "task_spec": {
+        "input_spec": {
+            "headline": {
+                "hidden": false,
+                "required": true,
+                "type": "string"
+            }
+        },
+        "output_spec": {
+            "category": {
+                "hidden": false,
+                "required": true,
+                "type": "string"
+            }
+        },
+        "view_spec": {
+            "config": "{\n    \"view\": {\n        \"items\": [\n            {\n                \"content\": {\n                    \"items\": [\n                        \"Headline: \",\n                        {\n                            \"path\": \"headline\",\n                            \"type\": \"data.input\"\n                        }\n                    ],\n                    \"type\": \"helper.join\"\n                },\n                \"type\": \"view.text\"\n            },\n            {\n                \"data\": {\n                    \"path\": \"category\",\n                    \"type\": \"data.output\"\n                },\n                \"options\": [\n                    {\n                        \"value\": \"clickbait\",\n                        \"label\": \"Clickbait\"\n                    },\n                    {\n                        \"value\": \"notclickbait\",\n                        \"label\": \"Not clickbait\"\n                    }\n                ],\n                \"validation\": {\n                    \"hint\": \"you need to select one answer\",\n                    \"type\": \"condition.required\"\n                },\n                \"type\": \"field.button-radio-group\"\n            }\n        ],\n        \"type\": \"view.list\"\n    },\n    \"plugins\": [\n        {\n            \"layout\": {\n                \"kind\": \"scroll\",\n                \"taskWidth\": 300\n            },\n            \"type\": \"plugin.toloka\"\n        },\n        {\n            \"1\": {\n                \"data\": {\n                    \"path\": \"category\",\n                    \"type\": \"data.output\"\n                },\n                \"payload\": \"clickbait\",\n                \"type\": \"action.set\"\n            },\n            \"2\": {\n                \"data\": {\n                    \"path\": \"category\",\n                    \"type\": \"data.output\"\n                },\n                \"payload\": \"notclickbait\",\n                \"type\": \"action.set\"\n            },\n            \"type\": \"plugin.hotkeys\"\n        }\n    ]\n}",
+            "lock": {
+                "action.set": "1.0.0",
+                "condition.required": "1.0.0",
+                "core": "1.0.0",
+                "field.button-radio-group": "1.0.0",
+                "helper.join": "1.0.0",
+                "plugin.hotkeys": "1.0.0",
+                "plugin.toloka": "1.0.0",
+                "view.list": "1.0.0",
+                "view.text": "1.0.0"
+            },
+            "type": "tb"
+        }
+    }
+}

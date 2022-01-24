@@ -1,0 +1,11 @@
+{
+    "private_name": "clickbait training",
+    "may_contain_adult_content": false,
+    "assignment_max_duration_seconds": 1800,
+    "mix_tasks_in_creation_order": false,
+    "shuffle_tasks_in_task_suite": false,
+    "training_tasks_in_task_suite_count": 10,
+    "task_suites_required_to_pass": 10,
+    "retry_training_after_days": 10,
+    "inherited_instructions": true
+}
