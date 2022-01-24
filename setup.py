@@ -21,6 +21,7 @@ setup(
         'apache-airflow',
         'toloka-kit>=0.1.21',
         'pandas>=1.1.0',
+        'apache-airflow-providers-amazon',
     ],
     include_package_data=True,
     project_urls={
