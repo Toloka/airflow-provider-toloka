@@ -7,9 +7,9 @@ from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
 from toloka.client import Project, structure
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.tasks.toloka as tlk_ops
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
