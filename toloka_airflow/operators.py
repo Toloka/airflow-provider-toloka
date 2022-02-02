@@ -182,8 +182,9 @@ def open_pool(
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 
-    obj = _structure_from_conf(obj, Pool)
-    pool = toloka_client.open_pool(obj)
+    pool = _structure_from_conf(obj, Pool)
+    pool_id = _extract_id(pool, Pool)
+    pool = toloka_client.open_pool(pool_id)
     if intermediary is None:
         return pool.to_json()
     else:
@@ -210,8 +211,9 @@ def open_exam_pool(
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 
-    obj = _structure_from_conf(obj, Training)
-    training = toloka_client.open_training(obj)
+    training = _structure_from_conf(obj, Training)
+    training_id = _extract_id(training, Training)
+    training = toloka_client.open_training(training_id)
     if intermediary is None:
         return training.to_json()
     else:

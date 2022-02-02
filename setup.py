@@ -9,7 +9,7 @@ with open('README.md') as f:
 setup(
     name='toloka-airflow',
     packages=['toloka_airflow'],
-    version='0.0.2',
+    version='0.0.3',
     description='Toloka airflow library',
     long_description=readme,
     long_description_content_type='text/markdown',
@@ -38,6 +38,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         'Topic :: Scientific/Engineering',
         'Topic :: Software Development',
