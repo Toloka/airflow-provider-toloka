@@ -4,20 +4,17 @@ import json
 from airflow.decorators import dag, task
 from airflow.utils.dates import days_ago
 
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.tasks.toloka as tlk_tasks
+import toloka_provider.sensors.toloka as tlk_sensors
 
 default_args = {
     'owner': 'airflow',
     'start_date': days_ago(5),
-    'email': ['airflow@my_first_dag.com'],
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
+    'retries': 0,
 }
 
 
-@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=['example'])
+@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=['example_dags'])
 def text_classification():
 
     @task
@@ -95,35 +92,37 @@ def text_classification():
         print('RESULT', df)
 
     project_conf = download_json(
-        'https://raw.githubusercontent.com/Pocoder/toloka-airflow/main/configs/project.json')
+        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/project.json')
     exam_conf = download_json(
-        'https://raw.githubusercontent.com/Pocoder/toloka-airflow/main/configs/exam.json')
+        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/exam.json')
     pool_conf = download_json(
-        'https://raw.githubusercontent.com/Pocoder/toloka-airflow/main/configs/pool.json')
+        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/pool.json')
 
-    project = tlk_ops.create_project(project_conf)
-    exam = tlk_ops.create_exam_pool(exam_conf, project=project)
-    pool = tlk_ops.create_pool(pool_conf, project=project, exam_pool=exam, expiration=timedelta(days=1))
+    project = tlk_tasks.create_project(project_conf)
+    exam = tlk_tasks.create_exam_pool(exam_conf, project=project)
+    pool = tlk_tasks.create_pool(pool_conf, project=project, exam_pool=exam, expiration=timedelta(days=1))
 
     dataset = prepare_datasets(
-        unlabeled_url='https://raw.githubusercontent.com/Pocoder/toloka-airflow/main/data/not_known.csv',
-        labeled_url='https://raw.githubusercontent.com/Pocoder/toloka-airflow/main/data/known.csv',
+        unlabeled_url='https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/data/not_known.csv',
+        labeled_url='https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/data/known.csv',
     )
     main_tasks, exam_tasks, honeypots = dataset['main_tasks'], dataset['exam_tasks'], dataset['honeypots']
     tasks = prepare_tasks(main_tasks)
     exam_tasks = prepare_exam_tasks(exam_tasks)
     honeypots = prepare_honeypots(honeypots)
 
-    _exam_upload = tlk_ops.create_tasks(exam_tasks, pool=exam, kwargs={'open_pool': True, 'allow_defaults': True})
-    _hp_upload = tlk_ops.create_tasks(honeypots, pool=pool, kwargs={'allow_defaults': True})
-    _tasks_upload = tlk_ops.create_tasks(tasks, pool=pool, kwargs={'allow_defaults': True})
+    _exam_upload = tlk_tasks.create_tasks(exam_tasks, pool=exam, kwargs={'open_pool': True, 'allow_defaults': True})
+    _honeypots_upload = tlk_tasks.create_tasks(honeypots, pool=pool, kwargs={'allow_defaults': True})
+    _tasks_upload = tlk_tasks.create_tasks(tasks, pool=pool, kwargs={'allow_defaults': True})
 
-    _waiting = tlk_ops.wait_pool(pool, open_pool=True)
-    assignments = tlk_ops.get_assignments(pool)
+    opened_pool = tlk_tasks.open_pool(pool)
+    _waiting = tlk_sensors.wait_pool(opened_pool)
 
+    assignments = tlk_tasks.get_assignments(pool)
     aggregate_assignments(assignments)
 
-    [_exam_upload, _hp_upload, _tasks_upload] >> _waiting >> assignments
+    [_exam_upload, _honeypots_upload, _tasks_upload] >> opened_pool
+    _waiting >> assignments
 
 
 dag = text_classification()

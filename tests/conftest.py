@@ -1,10 +1,9 @@
 import os
-import shutil
 import pytest
 
 from airflow.utils import db
 from toloka.client import TolokaClient
-
+from airflow.utils import db
 
 @pytest.fixture
 def toloka_client() -> TolokaClient:

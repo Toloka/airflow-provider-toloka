@@ -1,22 +1,34 @@
+from typing import Optional
+
 from toloka.client import TolokaClient
+
 from airflow.exceptions import AirflowException
 from airflow.hooks.base import BaseHook
-from typing import Optional
 
 
 class TolokaHook(BaseHook):
-    default_conn_name = 'toloka_default'
-    conn_type = "toloka"
-    conn_name_attr = "toloka_conn_id"
-    hook_name = "TOLOKA"
+    """
+    Interact with Toloka.
 
-    def __init__(self, toloka_conn_id: str = default_conn_name) -> None:
-        super().__init__()
+    Performs a connection to Toloka and retrieves client.
+
+    :param toloka_conn_id: Your OAuth token for Toloka.
+        You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
+    """
+
+    default_conn_name: str = 'toloka_default'
+    conn_type: str = "toloka"
+    conn_name_attr: str = "toloka_conn_id"
+    hook_name: str = "Toloka"
+
+    def __init__(self, toloka_conn_id: str = default_conn_name, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
         self.toloka_conn_id = toloka_conn_id
         self.client: Optional[TolokaClient] = None
         self.get_conn()
 
     def get_conn(self) -> TolokaClient:
+        """Function that initiates a new Toloka connection with token"""
         if not self.client:
             self.log.debug('Creating toloka client for conn_id: %s', self.toloka_conn_id)
 
