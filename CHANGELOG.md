@@ -2,7 +2,7 @@
 -------------------
 * Rename package to `airflow-provider-toloka`
 * Structure package by standard
-* Rename operators to funcops
+* Rename `operators` to `tasks`
 * Remove `get_assignments_df`
 
 
