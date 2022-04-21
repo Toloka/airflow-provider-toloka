@@ -6,19 +6,19 @@ from decimal import Decimal
 from functools import wraps
 from typing import Any, Type, TypeVar
 
-from toloka.client import structure, add_headers
+from toloka.client import structure
 
 T = TypeVar('T')
 
 
-def serialize_if_needed(func):
+def serialize_if_default_xcom_backend(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
         default_xcom_backend = 'airflow.models.xcom.BaseXCom'
         xcom_backend = os.getenv('AIRFLOW__CORE__XCOM_BACKEND', default_xcom_backend)
         need_to_serialize = (xcom_backend == default_xcom_backend)
-        result = add_headers('airflow')(func)(*args, **kwargs)
+        result = func(*args, **kwargs)
         if need_to_serialize and result is not None:
             if isinstance(result, list):
                 result = [obj.to_json() for obj in result]

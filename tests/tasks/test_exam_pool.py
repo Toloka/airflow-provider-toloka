@@ -83,12 +83,13 @@ def test_create_training(requests_mock, dag_for_test_exam_creation, training_map
     )
     conn_uri = conn.get_uri()
 
-    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def trainings(request, context):
-            assert Training.from_json(request._request.body) == structure(training_map, Training)
-            return training_map_with_readonly
+    def trainings(request, context):
+        assert Training.from_json(request._request.body) == structure(training_map, Training)
+        return training_map_with_readonly
 
-        requests_mock.post(f'{toloka_url}/trainings', json=trainings, status_code=201)
+    requests_mock.post(f'{toloka_url}/trainings', json=trainings, status_code=201)
+
+    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
 
         dagrun = dag_for_test_exam_creation.create_dagrun(
             state=DagRunState.RUNNING,
@@ -143,17 +144,18 @@ def test_open_training(requests_mock, dag_for_test_open_training, training_map, 
     )
     conn_uri = conn.get_uri()
 
+    def trainings(request, context):
+        assert Training.from_json(request._request.body) == structure(training_map, Training)
+        return training_map_with_readonly
+
+    def get_training(request, context):
+        return open_training_map_with_readonly
+
+    requests_mock.post(f'{toloka_url}/trainings', json=trainings, status_code=201)
+    requests_mock.post(f'{toloka_url}/trainings/21/open', status_code=204)
+    requests_mock.get(f'{toloka_url}/trainings/21', json=get_training)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def trainings(request, context):
-            assert Training.from_json(request._request.body) == structure(training_map, Training)
-            return training_map_with_readonly
-
-        def get_training(request, context):
-            return open_training_map_with_readonly
-
-        requests_mock.post(f'{toloka_url}/trainings', json=trainings, status_code=201)
-        requests_mock.post(f'{toloka_url}/trainings/21/open', status_code=204)
-        requests_mock.get(f'{toloka_url}/trainings/21', json=get_training)
 
         dagrun = dag_for_test_open_training.create_dagrun(
             state=DagRunState.RUNNING,

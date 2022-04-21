@@ -225,15 +225,16 @@ def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map
     )
     conn_uri = conn.get_uri()
 
+    def task_suites(request, context):
+        return success_answer_map
+
+    def pool(request, context):
+        return pool_map_with_readonly
+
+    requests_mock.post(f'{toloka_api_url}/staging/analytics-2', json=task_suites)
+    requests_mock.get(f'{toloka_url}/pools/21', json=pool)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def task_suites(request, context):
-            return success_answer_map
-
-        def pool(request, context):
-            return pool_map_with_readonly
-
-        requests_mock.post(f'{toloka_api_url}/staging/analytics-2', json=task_suites)
-        requests_mock.get(f'{toloka_url}/pools/21', json=pool)
 
         dagrun = dag_for_test_wait_closed_pool.create_dagrun(
             state=DagRunState.RUNNING,

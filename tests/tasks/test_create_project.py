@@ -118,12 +118,13 @@ def test_create_default_project(requests_mock, dag_for_test_project_creation, ra
     )
     conn_uri = conn.get_uri()
 
-    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def project(request, context):
-            assert Project.from_json(request._request.body) == structure(raw_project_map, Project)
-            return simple_project_map
+    def project(request, context):
+        assert Project.from_json(request._request.body) == structure(raw_project_map, Project)
+        return simple_project_map
 
-        requests_mock.post(f'{toloka_url}/projects', json=project, status_code=201)
+    requests_mock.post(f'{toloka_url}/projects', json=project, status_code=201)
+
+    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
 
         dagrun = dag_for_test_project_creation.create_dagrun(
             state=DagRunState.RUNNING,

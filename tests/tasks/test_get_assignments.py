@@ -230,27 +230,28 @@ def test_get_assignments(requests_mock, dag_for_test_get_assignments, prepared_a
     )
     conn_uri = conn.get_uri()
 
+    def assignments(request, context):
+        params = parse_qs(urlparse(request.url).query)
+        id_gt = params.pop('id_gt')[0] if 'id_gt' in params else None
+        assert params == {
+            'status': ['ACCEPTED'],
+            'pool_id': ['21'],
+            'user_id': ['user-i1d'],
+            'created_gte': ['2015-12-01T00:00:00'],
+            'created_lt': ['2016-06-01T00:00:00'],
+            'sort': ['id'],
+        }
+
+        items = [assignment for assignment in prepared_assignments if id_gt is None or assignment['id'] > id_gt][:3]
+        result = simplejson.dumps({
+            'items': items,
+            'has_more': items[-1]['id'] != prepared_assignments[-1]['id'],
+        })
+        return result
+
+    requests_mock.get(f'{toloka_url}/assignments', text=assignments)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def assignments(request, context):
-            params = parse_qs(urlparse(request.url).query)
-            id_gt = params.pop('id_gt')[0] if 'id_gt' in params else None
-            assert params == {
-                'status': ['ACCEPTED'],
-                'pool_id': ['21'],
-                'user_id': ['user-i1d'],
-                'created_gte': ['2015-12-01T00:00:00'],
-                'created_lt': ['2016-06-01T00:00:00'],
-                'sort': ['id'],
-            }
-
-            items = [assignment for assignment in prepared_assignments if id_gt is None or assignment['id'] > id_gt][:3]
-            result = simplejson.dumps({
-                'items': items,
-                'has_more': items[-1]['id'] != prepared_assignments[-1]['id'],
-            })
-            return result
-
-        requests_mock.get(f'{toloka_url}/assignments', text=assignments)
 
         dagrun = dag_for_test_get_assignments.create_dagrun(
             state=DagRunState.RUNNING,

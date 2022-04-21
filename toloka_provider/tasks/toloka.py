@@ -5,15 +5,17 @@ from typing import Optional, Dict, List, Union
 from airflow.decorators import task
 
 from toloka.client import Assignment, Pool, Project, Task, Training
+from toloka.util._managing_headers import add_headers
 
 from ..hooks.toloka import TolokaHook
-from ..utils import serialize_if_needed, structure_from_conf, extract_id
+from ..utils import serialize_if_default_xcom_backend, structure_from_conf, extract_id
 
 logger = logging.getLogger(__name__)
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def create_project(
     obj: Union[Project, Dict, str, bytes],
     *,
@@ -34,7 +36,8 @@ def create_project(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def create_exam_pool(
     obj: Union[Training, Dict, str, bytes],
     *,
@@ -59,7 +62,8 @@ def create_exam_pool(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def create_pool(
     obj: Union[Pool, Dict, str, bytes],
     *,
@@ -97,7 +101,8 @@ def create_pool(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def create_tasks(
     tasks: List[Union[Task, Dict]],
     *,
@@ -131,7 +136,8 @@ def create_tasks(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def open_pool(
     obj: Union[Pool, str],
     *,
@@ -153,7 +159,8 @@ def open_pool(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def open_exam_pool(
     obj: Union[Training, str],
     *,
@@ -175,7 +182,8 @@ def open_exam_pool(
 
 
 @task
-@serialize_if_needed
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def get_assignments(
     pool: Union[Pool, Dict, str],
     status: Union[str, List[str], Assignment.Status, List[Assignment.Status], None] = None,

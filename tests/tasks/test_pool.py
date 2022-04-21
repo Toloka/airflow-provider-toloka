@@ -261,17 +261,18 @@ def test_open_pool(requests_mock, dag_for_test_open_pool, pool_map, pool_map_wit
     )
     conn_uri = conn.get_uri()
 
+    def pools(request, context):
+        assert Pool.from_json(request._request.body) == structure(pool_map, Pool)
+        return pool_map_with_readonly
+
+    def get_pool(request, context):
+        return open_pool_map_with_readonly
+
+    requests_mock.post(f'{toloka_url}/pools', json=pools, status_code=201)
+    requests_mock.post(f'{toloka_url}/pools/21/open', status_code=204)
+    requests_mock.get(f'{toloka_url}/pools/21', json=get_pool)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def pools(request, context):
-            assert Pool.from_json(request._request.body) == structure(pool_map, Pool)
-            return pool_map_with_readonly
-
-        def get_pool(request, context):
-            return open_pool_map_with_readonly
-
-        requests_mock.post(f'{toloka_url}/pools', json=pools, status_code=201)
-        requests_mock.post(f'{toloka_url}/pools/21/open', status_code=204)
-        requests_mock.get(f'{toloka_url}/pools/21', json=get_pool)
 
         dagrun = dag_for_test_open_pool.create_dagrun(
             state=DagRunState.RUNNING,
