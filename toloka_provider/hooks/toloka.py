@@ -17,9 +17,9 @@ class TolokaHook(BaseHook):
     """
 
     default_conn_name: str = 'toloka_default'
-    conn_type: str = "toloka"
-    conn_name_attr: str = "toloka_conn_id"
-    hook_name: str = "Toloka"
+    conn_type: str = 'toloka'
+    conn_name_attr: str = 'toloka_conn_id'
+    hook_name: str = 'Toloka'
 
     def __init__(self, toloka_conn_id: str = default_conn_name, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)

@@ -208,7 +208,7 @@ def dag_for_test_get_assignments(pool_map, prepared_assignments):
             pool=pool,
             status=Assignment.Status.ACCEPTED,
             toloka_conn_id='toloka_conn',
-            kwargs={
+            additional_args={
                 'user_id': 'user-i1d',
                 'created_gte': datetime(2015, 12, 1),
                 'created_lt': datetime(2016, 6, 1),

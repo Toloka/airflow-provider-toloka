@@ -6,7 +6,7 @@ from airflow.utils import db
 
 from toloka_provider.hooks.toloka import TolokaHook
 
-toloka_client_mock = Mock(name="toloka_client")
+toloka_client_mock = Mock(name='toloka_client')
 
 
 class TestTolokaHook(unittest.TestCase):
@@ -17,11 +17,11 @@ class TestTolokaHook(unittest.TestCase):
                 conn_type='toloka',
                 host='https://localhost/toloka/',
                 port=443,
-                extra='{"verify": "False", "project": "AIRFLOW"}',
+                extra='',
             )
         )
 
-    @patch("toloka_provider.hooks.toloka.TolokaClient", autospec=True, return_value=toloka_client_mock)
+    @patch('toloka_provider.hooks.toloka.TolokaClient', autospec=True, return_value=toloka_client_mock)
     def test_toloka_client_connection(self, toloka_mock):
         toloka_hook = TolokaHook()
 

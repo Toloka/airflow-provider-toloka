@@ -1,5 +1,4 @@
 from typing import Any
-import pickle
 import uuid
 
 from airflow.models.xcom import BaseXCom

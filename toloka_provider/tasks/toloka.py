@@ -103,7 +103,7 @@ def create_tasks(
     *,
     pool: Union[Pool, Training, Dict, str, None] = None,
     toloka_conn_id: str = 'toloka_default',
-    kwargs: Optional[Dict] = None,
+    additional_args: Optional[Dict] = None,
 ) -> None:
     """Create a list of tasks for a given pool.
     Args:
@@ -111,13 +111,13 @@ def create_tasks(
         pool: Allow to set tasks pool if it's not present in the tasks themselves.
             May be either a `Pool` or `Training` object or config or a pool_id value.
         toloka_conn_id: Airflow connection with toloka credentials.
-        kwargs: Any other args presented in `toloka.client.task.CreateTasksParameters`.
+        additional_args: Any other args presented in `toloka.client.task.CreateTasksParameters`.
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 
-    if kwargs is None:
-        kwargs = {}
+    if additional_args is None:
+        additional_args = {}
     tasks = [structure_from_conf(task, Task) for task in tasks]
     if pool is not None:
         try:
@@ -126,7 +126,7 @@ def create_tasks(
             pool_id = extract_id(pool, Training)
         for task in tasks:
             task.pool_id = pool_id
-    tasks = toloka_client.create_tasks(tasks, **kwargs)
+    tasks = toloka_client.create_tasks(tasks, **additional_args)
     logger.info(f'Tasks: {tasks} created')
 
 
@@ -181,22 +181,22 @@ def get_assignments(
     status: Union[str, List[str], Assignment.Status, List[Assignment.Status], None] = None,
     *,
     toloka_conn_id: str = 'toloka_default',
-    kwargs: Optional[Dict] = None,
+    additional_args: Optional[Dict] = None,
 ) -> List[Union[Assignment, str]]:
     """Get all assignments of selected status from pool.
     Args:
         pool: Either a `Pool` object or it's config or a pool_id.
         status: A status or a list of statuses to get. All statuses (None) by default.
         toloka_conn_id: Airflow connection with toloka credentials.
-        kwargs: Any other args presented in `toloka.client.search_requests.AssignmentSearchRequest`.
+        additional_args: Any other args presented in `toloka.client.search_requests.AssignmentSearchRequest`.
     Returns:
         List of `Assignment` objects if custom XCom backend is configured or of its JSON serialized versions otherwise.
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 
-    if kwargs is None:
-        kwargs = {}
+    if additional_args is None:
+        additional_args = {}
     pool_id = extract_id(pool, Pool)
-    assignments = toloka_client.get_assignments(pool_id=pool_id, status=status, **kwargs)
+    assignments = toloka_client.get_assignments(pool_id=pool_id, status=status, **additional_args)
     return list(assignments)

@@ -21,7 +21,7 @@ def serialize_if_needed(func):
         result = add_headers('airflow')(func)(*args, **kwargs)
         if need_to_serialize and result is not None:
             if isinstance(result, list):
-                result = list(map(lambda obj: obj.to_json(), result))
+                result = [obj.to_json() for obj in result]
             else:
                 result = result.to_json()
         return result

@@ -81,7 +81,7 @@ def dag_for_test_sync_tasks_creation(tasks_map, sync_additional_params):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_tasks():
         tasks = prepare_tasks()
-        tlk_tasks.create_tasks(tasks=tasks, toloka_conn_id='toloka_conn', kwargs=sync_additional_params)
+        tlk_tasks.create_tasks(tasks=tasks, toloka_conn_id='toloka_conn', additional_args=sync_additional_params)
 
     return dag_tasks()
 

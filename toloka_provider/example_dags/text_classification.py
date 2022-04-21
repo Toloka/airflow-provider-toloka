@@ -111,9 +111,9 @@ def text_classification():
     exam_tasks = prepare_exam_tasks(exam_tasks)
     honeypots = prepare_honeypots(honeypots)
 
-    _exam_upload = tlk_tasks.create_tasks(exam_tasks, pool=exam, kwargs={'open_pool': True, 'allow_defaults': True})
-    _honeypots_upload = tlk_tasks.create_tasks(honeypots, pool=pool, kwargs={'allow_defaults': True})
-    _tasks_upload = tlk_tasks.create_tasks(tasks, pool=pool, kwargs={'allow_defaults': True})
+    _exam_upload = tlk_tasks.create_tasks(exam_tasks, pool=exam, additional_args={'open_pool': True, 'allow_defaults': True})
+    _honeypots_upload = tlk_tasks.create_tasks(honeypots, pool=pool, additional_args={'allow_defaults': True})
+    _tasks_upload = tlk_tasks.create_tasks(tasks, pool=pool, additional_args={'allow_defaults': True})
 
     opened_pool = tlk_tasks.open_pool(pool)
     _waiting = tlk_sensors.wait_pool(opened_pool)
