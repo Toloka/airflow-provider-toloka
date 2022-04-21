@@ -15,8 +15,7 @@ class TestTolokaHook(unittest.TestCase):
             Connection(
                 conn_id='toloka_default',
                 conn_type='toloka',
-                host='https://localhost/toloka/',
-                port=443,
+                password='password',
                 extra='',
             )
         )
@@ -25,6 +24,4 @@ class TestTolokaHook(unittest.TestCase):
     def test_toloka_client_connection(self, toloka_mock):
         toloka_hook = TolokaHook()
 
-        assert toloka_mock.called
-        assert isinstance(toloka_hook.client, Mock)
-        assert toloka_hook.client.name == toloka_mock.return_value.name
+        assert toloka_hook.get_conn().name == toloka_mock.return_value.name
