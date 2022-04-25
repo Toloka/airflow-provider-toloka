@@ -99,12 +99,12 @@ def test_create_tasks(requests_mock, dag_for_test_sync_tasks_creation, tasks_map
 
     def tasks(request, context):
         assert {
-                   'allow_defaults': ['true'],
-                   'async_mode': ['false'],
-                   'operation_id': ['281073ea-ab34-416e-a028-47421ff1b166'],
-                   'skip_invalid_items': ['true'],
-                   'open_pool': ['true'],
-               } == parse_qs(urlparse(request.url).query)
+            'allow_defaults': ['true'],
+            'async_mode': ['false'],
+            'operation_id': ['281073ea-ab34-416e-a028-47421ff1b166'],
+            'skip_invalid_items': ['true'],
+            'open_pool': ['true'],
+        } == parse_qs(urlparse(request.url).query)
         return task_create_result_map
 
     requests_mock.post(f'{toloka_url}/tasks', json=tasks, status_code=201)
