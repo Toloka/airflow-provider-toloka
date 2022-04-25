@@ -32,18 +32,17 @@ class TolokaHook(BaseHook):
         if not self.client:
             self.log.debug('Creating toloka client for conn_id: %s', self.toloka_conn_id)
 
-            extra_options = {}
             if not self.toloka_conn_id:
                 raise AirflowException('Failed to create toloka client. no toloka_conn_id provided')
 
             conn = self.get_connection(self.toloka_conn_id)
+
+            extra_options = {'env': 'PRODUCTION'}
             if conn.extra is not None:
                 extra_options = conn.extra_dejson
 
                 if 'env' in extra_options and extra_options['env'].upper() == 'SANDBOX':
                     extra_options['env'] = 'SANDBOX'
-                else:
-                    extra_options['env'] = 'PRODUCTION'
 
             try:
                 self.client = TolokaClient(

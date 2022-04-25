@@ -16,7 +16,6 @@ class TestTolokaHook(unittest.TestCase):
                 conn_id='toloka_default',
                 conn_type='toloka',
                 password='password',
-                extra='',
             )
         )
 
