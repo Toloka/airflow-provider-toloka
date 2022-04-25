@@ -1,4 +1,4 @@
-# Toloka-Airflow
+# Airflow Toloka Provider
 
 [![GitHub Tests](https://github.com/Toloka/toloka-airflow/workflows/Tests/badge.svg?branch=main)](//github.com/Toloka/toloka-airflow/actions?query=workflow:Tests)
 
