@@ -16,7 +16,7 @@ Getting started
 $ pip install airflow-provider-toloka
 ```
 
-A good way to start is to follow the [example](https://github.com/Toloka/airflow-provider-toloka/blob/fix_repo_links/toloka_provider/example_dags/text_classification.ipynb) in this repo.
+A good way to start is to follow the [example](https://github.com/Toloka/airflow-provider-toloka/blob/main/toloka_provider/example_dags/text_classification.ipynb) in this repo.
 
 Configuration
 --------------
