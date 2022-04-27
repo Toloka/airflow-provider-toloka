@@ -92,19 +92,19 @@ def text_classification():
         print('RESULT', df)
 
     project_conf = download_json(
-        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/project.json')
+        'https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/configs/project.json')
     exam_conf = download_json(
-        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/exam.json')
+        'https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/configs/exam.json')
     pool_conf = download_json(
-        'https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/configs/pool.json')
+        'https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/configs/pool.json')
 
     project = tlk_tasks.create_project(project_conf)
     exam = tlk_tasks.create_exam_pool(exam_conf, project=project)
     pool = tlk_tasks.create_pool(pool_conf, project=project, exam_pool=exam, expiration=timedelta(days=1))
 
     dataset = prepare_datasets(
-        unlabeled_url='https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/data/not_known.csv',
-        labeled_url='https://raw.githubusercontent.com/Toloka/toloka-airflow/main/example/data/known.csv',
+        unlabeled_url='https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/data/not_known.csv',
+        labeled_url='https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/data/known.csv',
     )
     main_tasks, exam_tasks, honeypots = dataset['main_tasks'], dataset['exam_tasks'], dataset['honeypots']
     tasks = prepare_tasks(main_tasks)

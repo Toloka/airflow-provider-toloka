@@ -1,6 +1,10 @@
 # Airflow Toloka Provider
 
-[![GitHub Tests](https://github.com/Toloka/toloka-airflow/workflows/Tests/badge.svg?branch=main)](//github.com/Toloka/toloka-airflow/actions?query=workflow:Tests)
+[![GitHub Tests](https://github.com/Toloka/airflow-provider-toloka/workflows/Tests/badge.svg?branch=main)](//github.com/Toloka/airflow-provider-toloka/actions?query=workflow:Tests)
+[![Codecov][codecov_badge]][codecov_link]
+
+[codecov_badge]: https://codecov.io/gh/Toloka/airflow-provider-toloka/branch/main/graph/badge.svg
+[codecov_link]: https://codecov.io/gh/Toloka/airflow-provider-toloka
 
 This library allows you to run crowdsourcing [Toloka](https://toloka.ai/) processes in [Apache Airflow](https://airflow.apache.org/) - a widely used workflow management system
 
@@ -12,7 +16,7 @@ Getting started
 $ pip install airflow-provider-toloka
 ```
 
-A good way to start is to follow the [example](https://github.com/Toloka/toloka-airflow/blob/main/example/text_classification.ipynb) in this repo.
+A good way to start is to follow the [example](https://github.com/Toloka/airflow-provider-toloka/blob/fix_repo_links/toloka_provider/example_dags/text_classification.ipynb) in this repo.
 
 Configuration
 --------------
@@ -36,7 +40,7 @@ Useful Links
 
 Questions and bug reports
 --------------
-* For reporting bugs please use the [Toloka/bugreport](https://github.com/Toloka/toloka-airflow/issues) page.
+* For reporting bugs please use the [Toloka/bugreport](https://github.com/Toloka/airflow-provider-toloka/issues) page.
 * Join our English-speaking [slack community](https://toloka.ai/community) for both tech and abstract questions.
 
 License
