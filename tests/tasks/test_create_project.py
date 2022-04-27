@@ -7,9 +7,9 @@ from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
 from toloka.client import Project, structure
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.tasks.toloka as tlk_tasks
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
@@ -101,7 +101,7 @@ def dag_for_test_project_creation(raw_project_map, simple_project_map):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_project():
         project = prepare_project()
-        created_project = tlk_ops.create_project(obj=project, toloka_conn_id='toloka_conn')
+        created_project = tlk_tasks.create_project(obj=project, toloka_conn_id='toloka_conn')
         check_project(created_project)
 
     return dag_project()
@@ -118,12 +118,13 @@ def test_create_default_project(requests_mock, dag_for_test_project_creation, ra
     )
     conn_uri = conn.get_uri()
 
-    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def project(request, context):
-            assert Project.from_json(request._request.body) == structure(raw_project_map, Project)
-            return simple_project_map
+    def project(request, context):
+        assert Project.from_json(request._request.body) == structure(raw_project_map, Project)
+        return simple_project_map
 
-        requests_mock.post(f'{toloka_url}/projects', json=project, status_code=201)
+    requests_mock.post(f'{toloka_url}/projects', json=project, status_code=201)
+
+    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
 
         dagrun = dag_for_test_project_creation.create_dagrun(
             state=DagRunState.RUNNING,

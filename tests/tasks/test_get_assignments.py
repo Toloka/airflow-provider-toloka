@@ -14,9 +14,9 @@ from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
 from toloka.client import Assignment, structure
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.tasks.toloka as tlk_tasks
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
@@ -204,11 +204,11 @@ def dag_for_test_get_assignments(pool_map, prepared_assignments):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_assignments():
         pool = prepare_pool()
-        assignments = tlk_ops.get_assignments(
+        assignments = tlk_tasks.get_assignments(
             pool=pool,
             status=Assignment.Status.ACCEPTED,
             toloka_conn_id='toloka_conn',
-            kwargs={
+            additional_args={
                 'user_id': 'user-i1d',
                 'created_gte': datetime(2015, 12, 1),
                 'created_lt': datetime(2016, 6, 1),
@@ -230,27 +230,28 @@ def test_get_assignments(requests_mock, dag_for_test_get_assignments, prepared_a
     )
     conn_uri = conn.get_uri()
 
+    def assignments(request, context):
+        params = parse_qs(urlparse(request.url).query)
+        id_gt = params.pop('id_gt')[0] if 'id_gt' in params else None
+        assert params == {
+            'status': ['ACCEPTED'],
+            'pool_id': ['21'],
+            'user_id': ['user-i1d'],
+            'created_gte': ['2015-12-01T00:00:00'],
+            'created_lt': ['2016-06-01T00:00:00'],
+            'sort': ['id'],
+        }
+
+        items = [assignment for assignment in prepared_assignments if id_gt is None or assignment['id'] > id_gt][:3]
+        result = simplejson.dumps({
+            'items': items,
+            'has_more': items[-1]['id'] != prepared_assignments[-1]['id'],
+        })
+        return result
+
+    requests_mock.get(f'{toloka_url}/assignments', text=assignments)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def assignments(request, context):
-            params = parse_qs(urlparse(request.url).query)
-            id_gt = params.pop('id_gt')[0] if 'id_gt' in params else None
-            assert params == {
-                'status': ['ACCEPTED'],
-                'pool_id': ['21'],
-                'user_id': ['user-i1d'],
-                'created_gte': ['2015-12-01T00:00:00'],
-                'created_lt': ['2016-06-01T00:00:00'],
-                'sort': ['id'],
-            }
-
-            items = [assignment for assignment in prepared_assignments if id_gt is None or assignment['id'] > id_gt][:3]
-            result = simplejson.dumps({
-                'items': items,
-                'has_more': items[-1]['id'] != prepared_assignments[-1]['id'],
-            })
-            return result
-
-        requests_mock.get(f'{toloka_url}/assignments', text=assignments)
 
         dagrun = dag_for_test_get_assignments.create_dagrun(
             state=DagRunState.RUNNING,
@@ -270,83 +271,4 @@ def test_get_assignments(requests_mock, dag_for_test_get_assignments, prepared_a
 
         check_assignments = dagrun.get_task_instance(task_id='check_assignments')
         check_assignments.task = dag_for_test_get_assignments.get_task(task_id='check_assignments')
-        check_assignments.run(ignore_ti_state=True)
-
-
-@pytest.fixture
-def prepared_dataset():
-    return pd.DataFrame(data={
-        'a': [1, 2, 3],
-        'b': [4, 5, 6],
-    })
-
-@pytest.fixture
-def dag_for_test_get_assignments_df(pool_map, prepared_dataset):
-
-    @task
-    def prepare_pool():
-        return pool_map
-
-    @task
-    def check_assignments(assignments):
-        assert assignments == prepared_dataset.to_json()
-
-    @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
-    def dag_assignments_df():
-        pool = prepare_pool()
-        assignments_df = tlk_ops.get_assignments_df(
-            pool=pool,
-            status=Assignment.Status.ACCEPTED,
-            toloka_conn_id='toloka_conn',
-            kwargs={
-                'start_time_from': datetime(2020, 1, 1),
-            },
-        )
-        check_assignments(assignments_df)
-
-    return dag_assignments_df()
-
-
-def test_get_assignments_df(requests_mock, dag_for_test_get_assignments_df, prepared_dataset, toloka_api_url):
-    conn = Connection(
-        conn_id='toloka_test',
-        conn_type='toloka_test',
-        password='fake_token',
-        extra={
-            'env': 'SANDBOX',
-        },
-    )
-    conn_uri = conn.get_uri()
-
-    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def get_content(request, context):
-
-            buf = io.StringIO()
-            prepared_dataset.to_csv(buf, sep='\t', index=False, columns=['a', 'b'])
-
-            return buf.getvalue().encode('utf-8')
-
-        requests_mock.get(f'{toloka_api_url}/new/requester/pools/21/assignments.tsv',
-                          content=get_content,
-                          headers={'Authorization': 'OAuth abc'},
-                          status_code=200)
-
-        dagrun = dag_for_test_get_assignments_df.create_dagrun(
-            state=DagRunState.RUNNING,
-            execution_date=DATA_INTERVAL_START,
-            data_interval=(DATA_INTERVAL_START, DATA_INTERVAL_END),
-            start_date=DATA_INTERVAL_END,
-            run_type=DagRunType.MANUAL,
-        )
-
-        prepare_pool = dagrun.get_task_instance(task_id='prepare_pool')
-        prepare_pool.task = dag_for_test_get_assignments_df.get_task(task_id='prepare_pool')
-        prepare_pool.run(ignore_ti_state=True)
-
-        get_assignments_df = dagrun.get_task_instance(task_id='get_assignments_df')
-        get_assignments_df.task = dag_for_test_get_assignments_df.get_task(task_id='get_assignments_df')
-        get_assignments_df.run(ignore_ti_state=True)
-
-        check_assignments = dagrun.get_task_instance(task_id='check_assignments')
-        check_assignments.task = dag_for_test_get_assignments_df.get_task(task_id='check_assignments')
         check_assignments.run(ignore_ti_state=True)

@@ -8,10 +8,10 @@ from airflow.models.connection import Connection
 from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
-from toloka.client.batch_create_results import TaskBatchCreateResult, FieldValidationError
-from toloka_airflow import operators as tlk_ops
+from toloka.client.batch_create_results import TaskBatchCreateResult
+import toloka_provider.tasks.toloka as tlk_tasks
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
@@ -81,7 +81,7 @@ def dag_for_test_sync_tasks_creation(tasks_map, sync_additional_params):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_tasks():
         tasks = prepare_tasks()
-        tlk_ops.create_tasks(tasks=tasks, toloka_conn_id='toloka_conn', kwargs=sync_additional_params)
+        tlk_tasks.create_tasks(tasks=tasks, toloka_conn_id='toloka_conn', additional_args=sync_additional_params)
 
     return dag_tasks()
 
@@ -97,6 +97,18 @@ def test_create_tasks(requests_mock, dag_for_test_sync_tasks_creation, tasks_map
     )
     conn_uri = conn.get_uri()
 
+    def tasks(request, context):
+        assert {
+            'allow_defaults': ['true'],
+            'async_mode': ['false'],
+            'operation_id': ['281073ea-ab34-416e-a028-47421ff1b166'],
+            'skip_invalid_items': ['true'],
+            'open_pool': ['true'],
+        } == parse_qs(urlparse(request.url).query)
+        return task_create_result_map
+
+    requests_mock.post(f'{toloka_url}/tasks', json=tasks, status_code=201)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
 
         dagrun = dag_for_test_sync_tasks_creation.create_dagrun(
@@ -110,19 +122,6 @@ def test_create_tasks(requests_mock, dag_for_test_sync_tasks_creation, tasks_map
         prepare_tasks.task = dag_for_test_sync_tasks_creation.get_task(task_id='prepare_tasks')
         prepare_tasks.run(ignore_ti_state=True)
 
-        def tasks(request, context):
-            print(parse_qs(urlparse(request.url).query))
-            assert {
-                'allow_defaults': ['true'],
-                'async_mode': ['false'],
-                'operation_id': ['281073ea-ab34-416e-a028-47421ff1b166'],
-                'skip_invalid_items': ['true'],
-                'open_pool': ['true'],
-            } == parse_qs(urlparse(request.url).query)
-            return task_create_result_map
-
-        requests_mock.post(f'{toloka_url}/tasks', json=tasks, status_code=201)
-
         with caplog.at_level(logging.INFO):
             caplog.clear()
             create_tasks = dagrun.get_task_instance(task_id='create_tasks')
@@ -130,5 +129,4 @@ def test_create_tasks(requests_mock, dag_for_test_sync_tasks_creation, tasks_map
             create_tasks.run(ignore_ti_state=True)
 
             result = TaskBatchCreateResult.structure(task_create_result_map)
-
-            assert caplog.record_tuples.count(('toloka_airflow.operators', logging.INFO, f'Tasks: {result} created')) == 1
+            assert caplog.record_tuples.count(('toloka_provider.tasks.toloka', logging.INFO, f'Tasks: {result} created')) == 1

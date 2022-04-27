@@ -7,9 +7,9 @@ from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
 from toloka.client import Pool, structure
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.tasks.toloka as tlk_tasks
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
@@ -184,7 +184,7 @@ def dag_for_test_pool_creation(pool_map, pool_map_with_readonly):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_pool():
         pool = prepare_pool()
-        created_pool = tlk_ops.create_pool(obj=pool, toloka_conn_id='toloka_conn')
+        created_pool = tlk_tasks.create_pool(obj=pool, toloka_conn_id='toloka_conn')
         check_pool(created_pool)
 
     return dag_pool()
@@ -242,8 +242,8 @@ def dag_for_test_open_pool(pool_map, open_pool_map_with_readonly):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_open_pool():
         pool = prepare_pool()
-        created_pool = tlk_ops.create_pool(obj=pool, toloka_conn_id='toloka_conn')
-        opened_pool = tlk_ops.open_pool(obj=created_pool, toloka_conn_id='toloka_conn')
+        created_pool = tlk_tasks.create_pool(obj=pool, toloka_conn_id='toloka_conn')
+        opened_pool = tlk_tasks.open_pool(obj=created_pool, toloka_conn_id='toloka_conn')
         check_pool(opened_pool)
 
     return dag_open_pool()
@@ -261,17 +261,18 @@ def test_open_pool(requests_mock, dag_for_test_open_pool, pool_map, pool_map_wit
     )
     conn_uri = conn.get_uri()
 
+    def pools(request, context):
+        assert Pool.from_json(request._request.body) == structure(pool_map, Pool)
+        return pool_map_with_readonly
+
+    def get_pool(request, context):
+        return open_pool_map_with_readonly
+
+    requests_mock.post(f'{toloka_url}/pools', json=pools, status_code=201)
+    requests_mock.post(f'{toloka_url}/pools/21/open', status_code=204)
+    requests_mock.get(f'{toloka_url}/pools/21', json=get_pool)
+
     with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def pools(request, context):
-            assert Pool.from_json(request._request.body) == structure(pool_map, Pool)
-            return pool_map_with_readonly
-
-        def get_pool(request, context):
-            return open_pool_map_with_readonly
-
-        requests_mock.post(f'{toloka_url}/pools', json=pools, status_code=201)
-        requests_mock.post(f'{toloka_url}/pools/21/open', status_code=204)
-        requests_mock.get(f'{toloka_url}/pools/21', json=get_pool)
 
         dagrun = dag_for_test_open_pool.create_dagrun(
             state=DagRunState.RUNNING,

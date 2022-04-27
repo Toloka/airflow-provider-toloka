@@ -1,6 +1,6 @@
 def test_import():
-    import toloka_airflow
-    import toloka_airflow.hook_decorators
-    import toloka_airflow.hooks
-    import toloka_airflow.operators
-    import toloka_airflow.util
+    import toloka_provider
+    import toloka_provider.hooks.toloka
+    import toloka_provider.tasks.toloka
+    import toloka_provider.sensors.toloka
+    import toloka_provider.utils

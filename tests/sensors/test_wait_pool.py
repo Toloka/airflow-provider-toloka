@@ -7,9 +7,9 @@ from airflow.utils.state import DagRunState
 from airflow.utils.types import DagRunType
 
 from toloka.client import Pool, structure
-from toloka_airflow import operators as tlk_ops
+import toloka_provider.sensors.toloka as tlk_sensors
 
-from .time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
+from ..time_config import DATA_INTERVAL_START, DATA_INTERVAL_END
 
 
 @pytest.fixture
@@ -163,6 +163,37 @@ def pool_map_with_readonly(pool_map):
 
 
 @pytest.fixture
+def success_answer_map():
+    return {
+        'id': '8ee7e276-53bb-4220-823e-05f578392915',
+        'type': 'ANALYTICS',
+        'status': 'SUCCESS',
+        'submitted': '2021-08-24T06:30:08.394',
+        'started': '2021-08-24T06:30:08.51',  # 2 ms digits
+        'finished': '2021-08-24T06:30:11.99999',  # 5 ms digits
+        'progress': 100,
+        'details':
+            {
+                'value':
+                    [
+                        {
+                            'result': {
+                                'value': 100,
+                            },
+                            'request':
+                                {
+                                    'name': 'submitted_assignments_count',
+                                    'subject': 'POOL',
+                                    'subject_id': '26807107'
+                                },
+                            'finished': '2021-08-24T06:30:08.923461'
+                        },
+                    ]
+            }
+    }
+
+
+@pytest.fixture
 def dag_for_test_wait_closed_pool(pool_map_with_readonly):
 
     @task
@@ -176,14 +207,14 @@ def dag_for_test_wait_closed_pool(pool_map_with_readonly):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_wait_pool():
         pool = prepare_pool()
-        _waiting = tlk_ops.wait_pool(pool, toloka_conn_id='toloka_conn')
+        _waiting = tlk_sensors.wait_pool(pool, toloka_conn_id='toloka_conn')
         _check = check_pool(pool)
         _waiting >> _check
 
     return dag_wait_pool()
 
 
-def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map_with_readonly, toloka_url):
+def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map_with_readonly, success_answer_map, toloka_url, toloka_api_url):
     conn = Connection(
         conn_id='toloka_test',
         conn_type='toloka_test',
@@ -194,11 +225,16 @@ def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map
     )
     conn_uri = conn.get_uri()
 
-    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
-        def pool(request, context):
-            return pool_map_with_readonly
+    def task_suites(request, context):
+        return success_answer_map
 
-        requests_mock.get(f'{toloka_url}/pools/21', json=pool)
+    def pool(request, context):
+        return pool_map_with_readonly
+
+    requests_mock.post(f'{toloka_api_url}/staging/analytics-2', json=task_suites)
+    requests_mock.get(f'{toloka_url}/pools/21', json=pool)
+
+    with mock.patch.dict('os.environ', AIRFLOW_CONN_TOLOKA_CONN=conn_uri):
 
         dagrun = dag_for_test_wait_closed_pool.create_dagrun(
             state=DagRunState.RUNNING,
