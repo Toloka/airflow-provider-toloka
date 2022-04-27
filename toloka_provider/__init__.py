@@ -9,5 +9,5 @@ def get_provider_info():
                 'hook-class-name': 'toloka_provider.hooks.toloka.TolokaHook',
             },
         ],
-        'version': ['0.0.4'],
+        'version': ['0.0.5'],
     }
