@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # coding: utf8
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 with open('README.md') as f:
     readme = f.read()
 
 setup(
     name='airflow-provider-toloka',
-    packages=['toloka_provider'],
+    packages=['toloka_provider', *(f'toloka_provider.{package}' for package in find_packages('toloka_provider'))],
     version='0.0.4',
     description='A Toloka provider for Apache Airflow',
     long_description=readme,
