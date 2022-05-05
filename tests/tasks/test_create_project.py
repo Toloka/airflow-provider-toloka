@@ -129,7 +129,6 @@ def test_create_default_project(requests_mock, dag_for_test_project_creation, ra
         dagrun = dag_for_test_project_creation.create_dagrun(
             state=DagRunState.RUNNING,
             execution_date=DATA_INTERVAL_START,
-            data_interval=(DATA_INTERVAL_START, DATA_INTERVAL_END),
             start_date=DATA_INTERVAL_END,
             run_type=DagRunType.MANUAL,
         )

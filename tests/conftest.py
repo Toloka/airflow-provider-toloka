@@ -1,6 +1,5 @@
 import os
 import pytest
-
 from airflow.utils import db
 from toloka.client import TolokaClient
 
@@ -27,4 +26,8 @@ def toloka_url(toloka_api_url) -> str:
 
 @pytest.fixture(autouse=True, scope='session')
 def reset_db():
+    os.environ['AIRFLOW__CORE__SQL_ALCHEMY_CONN'] = 'sqlite:////tmp/airflow.db'
     db.resetdb()
+    yield
+    os.remove(os.path.join(os.environ["AIRFLOW_HOME"], "unittests.cfg"))
+    os.remove(os.path.join(os.environ["AIRFLOW_HOME"], "webserver_config.py"))
