@@ -23,9 +23,8 @@ setup(
     author_email='pocoder@toloka.ai',
     python_requires='>=3.7.0',
     install_requires=[
-        'apache-airflow>=2.0.0',
+        'apache-airflow>=2.1.0',
         'toloka-kit>=0.1.24',
-        'pandas>=1.1.0',
     ],
     include_package_data=True,
     project_urls={

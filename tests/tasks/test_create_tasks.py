@@ -114,7 +114,6 @@ def test_create_tasks(requests_mock, dag_for_test_sync_tasks_creation, tasks_map
         dagrun = dag_for_test_sync_tasks_creation.create_dagrun(
             state=DagRunState.RUNNING,
             execution_date=DATA_INTERVAL_START,
-            data_interval=(DATA_INTERVAL_START, DATA_INTERVAL_END),
             start_date=DATA_INTERVAL_END,
             run_type=DagRunType.MANUAL,
         )

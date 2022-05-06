@@ -256,7 +256,6 @@ def test_get_assignments(requests_mock, dag_for_test_get_assignments, prepared_a
         dagrun = dag_for_test_get_assignments.create_dagrun(
             state=DagRunState.RUNNING,
             execution_date=DATA_INTERVAL_START,
-            data_interval=(DATA_INTERVAL_START, DATA_INTERVAL_END),
             start_date=DATA_INTERVAL_END,
             run_type=DagRunType.MANUAL,
         )
