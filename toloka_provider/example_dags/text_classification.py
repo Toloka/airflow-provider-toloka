@@ -73,15 +73,15 @@ def text_classification():
         assignments = [Assignment.from_json(assignment) for assignment in assignments]
         tasks = []
         labels = []
-        performers = []
+        workers = []
         for assignment in assignments:
             for task, solution in zip(assignment.tasks, assignment.solutions):
                 tasks.append(task.input_values['headline'])
                 labels.append(solution.output_values['category'])
-                performers.append(assignment.user_id)
+                workers.append(assignment.user_id)
         assignments = {
             'task': tasks,
-            'performer': performers,
+            'worker': workers,
             'label': labels
         }
         assignments = pd.DataFrame.from_dict(assignments)
