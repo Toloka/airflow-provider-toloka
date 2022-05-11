@@ -23,7 +23,7 @@ Configuration
 In the Airflow Connections UI, create a new connection for Toloka.
 
 * `Conn ID`: `toloka_default`
-* `Conn Type`: `toloka` or any other
+* `Conn Type`: `Toloka`
 * `Password`: enter your OAuth token for Toloka.
         You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
 
