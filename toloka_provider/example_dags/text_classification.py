@@ -118,7 +118,7 @@ def text_classification():
     opened_pool = tlk_tasks.open_pool(pool)
     _waiting = tlk_sensors.wait_pool(opened_pool)
 
-    assignments = tlk_tasks.get_assignments(pool)
+    assignments = tlk_tasks.get_assignments(pool, 'ACCEPTED')
     aggregate_assignments(assignments)
 
     [_exam_upload, _honeypots_upload, _tasks_upload] >> opened_pool
