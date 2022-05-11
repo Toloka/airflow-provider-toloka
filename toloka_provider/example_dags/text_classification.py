@@ -73,15 +73,15 @@ def text_classification():
         assignments = [Assignment.from_json(assignment) for assignment in assignments]
         tasks = []
         labels = []
-        performers = []
+        workers = []
         for assignment in assignments:
             for task, solution in zip(assignment.tasks, assignment.solutions):
                 tasks.append(task.input_values['headline'])
                 labels.append(solution.output_values['category'])
-                performers.append(assignment.user_id)
+                workers.append(assignment.user_id)
         assignments = {
             'task': tasks,
-            'performer': performers,
+            'worker': workers,
             'label': labels
         }
         assignments = pd.DataFrame.from_dict(assignments)
@@ -118,7 +118,7 @@ def text_classification():
     opened_pool = tlk_tasks.open_pool(pool)
     _waiting = tlk_sensors.wait_pool(opened_pool)
 
-    assignments = tlk_tasks.get_assignments(pool)
+    assignments = tlk_tasks.get_assignments(pool, 'ACCEPTED')
     aggregate_assignments(assignments)
 
     [_exam_upload, _honeypots_upload, _tasks_upload] >> opened_pool
