@@ -8,7 +8,7 @@ from airflow.hooks.base import BaseHook
 
 class TolokaHook(BaseHook):
     """
-    Interact with Toloka.
+    Hook to interact with Toloka.
 
     Performs a connection to Toloka and retrieves client.
 
