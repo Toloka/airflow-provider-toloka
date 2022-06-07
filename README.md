@@ -18,18 +18,30 @@ $ pip install airflow-provider-toloka
 
 A good way to start is to follow the [example](https://github.com/Toloka/airflow-provider-toloka/blob/main/toloka_provider/example_dags/text_classification.ipynb) in this repo.
 
-Configuration
+`TolokaHook`
 --------------
-In the Airflow Connections UI, create a new connection for Toloka.
+`TolokaHook` is used for getting toloka OAuth token and creating [`TolokaClient`](https://toloka.ai/en/docs/toloka-kit/reference/toloka.client.TolokaClient) with it. 
+You can get `TolokaClient` from `TolokaHook` by calling `get_conn()` method.
+
+To make an appropriate Airflow Connection you need to create it in the Airflow Connections UI with following parameters:
 
 * `Conn ID`: `toloka_default`
 * `Conn Type`: `Toloka`
 * `Password`: enter your OAuth token for Toloka.
         You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
 
-Tasks uses the `toloka_default` connection id by default, but
+Tasks use the `toloka_default` connection id by default, but
 if needed, you can create additional Airflow Connections and reference them
 as the function `toloka_conn_id` argument.
+
+Tasks and Sensors
+--------------
+There are several tasks and sensors that give you easy way to interact with Toloka from Airflow DAGs.
+Creating a project and a pool, adding tasks and getting assignments are among them.
+You can easily create your own task using `TolokaHook` if it is beyond the scope of implemented ones.
+And it would be nice to have your pull request with updates.
+
+Check out our [example](https://github.com/Toloka/airflow-provider-toloka/blob/main/toloka_provider/example_dags/text_classification.ipynb) to see tasks and sensors in the battlefield.
 
 Useful Links
 --------------

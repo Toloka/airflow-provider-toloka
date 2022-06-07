@@ -1,3 +1,4 @@
+from pendulum import datetime
 from datetime import timedelta
 import json
 
@@ -7,15 +8,29 @@ from airflow.utils.dates import days_ago
 import toloka_provider.tasks.toloka as tlk_tasks
 import toloka_provider.sensors.toloka as tlk_sensors
 
-default_args = {
-    'owner': 'airflow',
-    'start_date': days_ago(5),
-    'retries': 0,
-}
 
-
-@dag(default_args=default_args, schedule_interval=None, catchup=False, tags=['example_dags'])
+@dag(
+    start_date=datetime(2022, 1, 1),
+    schedule_interval=None,
+    default_args={'retries': 0},
+    catchup=False,
+    tags=['example'],
+)
 def text_classification():
+    """
+    ### Example DAG for text classification.
+
+    Showcases usage of the toloka provider package's tasks and sensors.
+    Graph creates toloka project which gathers people answers about article headlines: are they clickbaits or not.
+    There are also examination pools and control tasks created for selecting good workers and monitor their answers quality.
+    Answers are aggregated in the end to compile the final results.
+
+    To run this example, create a Toloka connection with:
+    - Conn id: toloka_default
+    - Conn type: Toloka
+    - password: your toloka token
+    (You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
+    """
 
     @task
     def download_json(url):
@@ -106,10 +121,10 @@ def text_classification():
         unlabeled_url='https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/data/not_known.csv',
         labeled_url='https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/data/known.csv',
     )
-    main_tasks, exam_tasks, honeypots = dataset['main_tasks'], dataset['exam_tasks'], dataset['honeypots']
-    tasks = prepare_tasks(main_tasks)
-    exam_tasks = prepare_exam_tasks(exam_tasks)
-    honeypots = prepare_honeypots(honeypots)
+
+    tasks = prepare_tasks(dataset['main_tasks'])
+    exam_tasks = prepare_exam_tasks(dataset['exam_tasks'])
+    honeypots = prepare_honeypots(dataset['honeypots'])
 
     _exam_upload = tlk_tasks.create_tasks(exam_tasks, pool=exam, additional_args={'open_pool': True, 'allow_defaults': True})
     _honeypots_upload = tlk_tasks.create_tasks(honeypots, pool=pool, additional_args={'allow_defaults': True})

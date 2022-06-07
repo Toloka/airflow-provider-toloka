@@ -1,3 +1,7 @@
+"""
+Module contains TolokaHook. It gets token from Airflow Connections and creates TolokaClient.
+(see https://github.com/Toloka/toloka-kit for more information about functionality of TolokaClient)
+"""
 from typing import Optional
 
 from toloka.client import TolokaClient
@@ -12,7 +16,7 @@ class TolokaHook(BaseHook):
 
     Performs a connection to Toloka and retrieves client.
 
-    :param toloka_conn_id: Your OAuth token for Toloka.
+    :param toloka_conn_id: Airflow Connection with OAuth token for Toloka.
         You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
     """
 
@@ -28,7 +32,7 @@ class TolokaHook(BaseHook):
         self.get_conn()
 
     def get_conn(self) -> TolokaClient:
-        """Function that initiates a new Toloka connection with token"""
+        """Function that creates a new TolokaClient with token and returns it"""
         if not self.client:
             self.log.debug('Creating toloka client for conn_id: %s', self.toloka_conn_id)
 

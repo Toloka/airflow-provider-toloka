@@ -1,3 +1,6 @@
+"""
+Module contains airflow tasks to make basic manipulations in Toloka such as project and pool processing.
+"""
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Union

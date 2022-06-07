@@ -1,3 +1,6 @@
+"""
+Module contains sensor to wait pool finishing
+"""
 from typing import Dict, Union, Callable
 import logging
 

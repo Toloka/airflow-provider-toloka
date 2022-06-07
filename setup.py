@@ -32,6 +32,7 @@ setup(
     },
     classifiers=[
         'Development Status :: 4 - Beta',
+        'Framework :: Apache Airflow',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
