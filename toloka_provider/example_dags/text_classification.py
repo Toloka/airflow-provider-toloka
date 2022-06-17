@@ -131,13 +131,12 @@ def text_classification():
     _tasks_upload = tlk_tasks.create_tasks(tasks, pool=pool, additional_args={'allow_defaults': True})
 
     opened_pool = tlk_tasks.open_pool(pool)
-    _waiting = tlk_sensors.WaitPoolSensor(pool=opened_pool, task_id='wait_pool')
+    _waiting = tlk_sensors.WaitPoolSensor(task_id='waitPool', toloka_pool=opened_pool)
 
     assignments = tlk_tasks.get_assignments(pool, 'ACCEPTED')
     aggregate_assignments(assignments)
 
-    [_exam_upload, _honeypots_upload, _tasks_upload] >> opened_pool
-    _waiting >> assignments
+    [_exam_upload, _honeypots_upload, _tasks_upload] >> opened_pool >> _waiting >> assignments
 
 
 dag = text_classification()

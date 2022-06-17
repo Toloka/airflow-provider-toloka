@@ -23,25 +23,25 @@ class WaitPoolSensor(BaseSensorOperator):
     :param toloka_conn_id: Airflow connection with toloka credentials.
     """
 
-    template_fields: Sequence[str] = ('pool',)
+    template_fields: Sequence[str] = ('toloka_pool',)
 
     def __init__(
         self,
         *,
-        pool: Union[Pool, Dict, str],
+        toloka_pool: Union[Pool, Dict, str],
         toloka_conn_id: str = 'toloka_default',
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        self.pool = pool
+        self.toloka_pool = toloka_pool
         self.toloka_conn_id = toloka_conn_id
 
     def poke(self, context: 'Context') -> bool:
-        pool_id = extract_id(self.pool, Pool)
+        pool_id = extract_id(self.toloka_pool, Pool)
         toloka_hook = TolokaHook(toloka_conn_id=self.toloka_conn_id)
         toloka_client = toloka_hook.get_conn()
 
-        pool = toloka_client.get_pools(pool_id)
+        pool = toloka_client.get_pool(pool_id)
 
         op = toloka_client.get_analytics([CompletionPercentagePoolAnalytics(subject_id=pool_id)])
         percentage = toloka_client.wait_operation(op).details['value'][0]['result']['value']
