@@ -33,17 +33,18 @@ class WaitPoolSensor(BaseSensorOperator):
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
-        self.pool_id = extract_id(pool, Pool)
+        self.pool = pool
         self.toloka_conn_id = toloka_conn_id
 
     def poke(self, context: 'Context') -> bool:
+        pool_id = extract_id(self.pool, Pool)
         toloka_hook = TolokaHook(toloka_conn_id=self.toloka_conn_id)
         toloka_client = toloka_hook.get_conn()
 
-        pool = toloka_client.get_pools(self.pool_id)
+        pool = toloka_client.get_pools(pool_id)
 
-        op = toloka_client.get_analytics([CompletionPercentagePoolAnalytics(subject_id=self.pool_id)])
+        op = toloka_client.get_analytics([CompletionPercentagePoolAnalytics(subject_id=pool_id)])
         percentage = toloka_client.wait_operation(op).details['value'][0]['result']['value']
-        self.log.info(f'Pool {self.pool_id} - {percentage}%')
+        self.log.info(f'Pool {pool_id} - {percentage}%')
 
         return pool.is_closed()
