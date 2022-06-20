@@ -109,11 +109,11 @@ def dag_for_test_project_creation(raw_project_map, simple_project_map):
 
 def test_create_default_project(requests_mock, dag_for_test_project_creation, raw_project_map, simple_project_map, toloka_url):
     conn = Connection(
-        conn_id='toloka_test',
-        conn_type='toloka_test',
-        password='fake_token',
+        conn_id='toloka_conn',
+        conn_type='toloka',
         extra={
-            'env': 'SANDBOX',
+            'extra__toloka__token': 'fake_token',
+            'extra__toloka__environment': 'SANDBOX',
         },
     )
     conn_uri = conn.get_uri()

@@ -27,8 +27,9 @@ To make an appropriate Airflow Connection you need to create it in the Airflow C
 
 * `Conn ID`: `toloka_default`
 * `Conn Type`: `Toloka`
-* `Password`: enter your OAuth token for Toloka.
+* `Token`: enter your OAuth token for Toloka.
         You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
+* `Environment`: enter `production` or `sandbox`
 
 Tasks use the `toloka_default` connection id by default, but
 if needed, you can create additional Airflow Connections and reference them

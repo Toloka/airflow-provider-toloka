@@ -74,11 +74,11 @@ def dag_for_test_exam_creation(training_map, training_map_with_readonly):
 
 def test_create_training(requests_mock, dag_for_test_exam_creation, training_map, training_map_with_readonly, toloka_url):
     conn = Connection(
-        conn_id='toloka_test',
-        conn_type='toloka_test',
-        password='fake_token',
+        conn_id='toloka_conn',
+        conn_type='toloka',
         extra={
-            'env': 'SANDBOX',
+            'extra__toloka__token': 'fake_token',
+            'extra__toloka__environment': 'SANDBOX',
         },
     )
     conn_uri = conn.get_uri()
@@ -134,11 +134,11 @@ def dag_for_test_open_training(training_map, open_training_map_with_readonly):
 def test_open_training(requests_mock, dag_for_test_open_training, training_map, training_map_with_readonly,
                    open_training_map_with_readonly, toloka_url):
     conn = Connection(
-        conn_id='toloka_test',
-        conn_type='toloka_test',
-        password='fake_token',
+        conn_id='toloka_conn',
+        conn_type='toloka',
         extra={
-            'env': 'SANDBOX',
+            'extra__toloka__token': 'fake_token',
+            'extra__toloka__environment': 'SANDBOX',
         },
     )
     conn_uri = conn.get_uri()
