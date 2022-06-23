@@ -1,3 +1,14 @@
+0.0.6
+-------------------
+* Update Dockerfile in example. 
+Now it installs the latest version of Airflow.
+* Changed TolokaHook fields: 
+  * Change field for token: now `extra__toloka__token` instead of `password`
+  * Add separate text field `extra__toloka__environment` for environment
+  * Hide unnecessary fields in UI
+* `toloka_provider.sensors.wait_pool` is `toloka_provider.sensors.WaitPoolSensor` now and is inherited from `BaseSensor`.
+Also, name of argument `pool` changed to keyword argument `toloka_pool`. 
+
 0.0.5
 -------------------
 * Fixed import troubles

@@ -9,7 +9,7 @@ with open('README.md') as f:
 setup(
     name='airflow-provider-toloka',
     packages=['toloka_provider', *(f'toloka_provider.{package}' for package in find_packages('toloka_provider'))],
-    version='0.0.5',
+    version='0.0.6',
     description='A Toloka provider for Apache Airflow',
     long_description=readme,
     long_description_content_type='text/markdown',

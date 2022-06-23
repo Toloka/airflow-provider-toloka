@@ -42,7 +42,7 @@ class TolokaHook(BaseHook):
             self.log.debug('Creating toloka client for conn_id: %s', self.toloka_conn_id)
 
             if not self.toloka_conn_id:
-                raise AirflowException('Failed to create toloka client. no toloka_conn_id provided')
+                raise AirflowException('Failed to create toloka client. No toloka_conn_id provided')
 
             try:
                 self.client = TolokaClient(
