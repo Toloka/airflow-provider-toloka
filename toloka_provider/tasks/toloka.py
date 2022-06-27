@@ -1,3 +1,6 @@
+"""
+Module contains airflow tasks to make basic manipulations in Toloka such as project and pool processing.
+"""
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Union
@@ -78,7 +81,7 @@ def create_pool(
         project: Project to assign a pool to. May pass either an object, config or project_id.
         exam_pool: Related training pool. May pass either an object, config or pool_id.
         expiration: Expiration setting. May pass any of:
-            * `None` if this setting if already present;
+            * `None` if this setting is already present;
             * `datetime` object to set exact datetime;
             * `timedelta` to set expiration related to the current time.
         toloka_conn_id: Airflow connection with toloka credentials.

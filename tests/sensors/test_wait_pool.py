@@ -207,7 +207,7 @@ def dag_for_test_wait_closed_pool(pool_map_with_readonly):
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_wait_pool():
         pool = prepare_pool()
-        _waiting = tlk_sensors.wait_pool(pool, toloka_conn_id='toloka_conn')
+        _waiting = tlk_sensors.WaitPoolSensor(task_id='wait_pool', toloka_pool=pool, toloka_conn_id='toloka_conn')
         _check = check_pool(pool)
         _waiting >> _check
 
@@ -216,11 +216,11 @@ def dag_for_test_wait_closed_pool(pool_map_with_readonly):
 
 def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map_with_readonly, success_answer_map, toloka_url, toloka_api_url):
     conn = Connection(
-        conn_id='toloka_test',
-        conn_type='toloka_test',
-        password='fake_token',
+        conn_id='toloka_conn',
+        conn_type='toloka',
         extra={
-            'env': 'SANDBOX',
+            'extra__toloka__token': 'fake_token',
+            'extra__toloka__environment': 'SANDBOX',
         },
     )
     conn_uri = conn.get_uri()
