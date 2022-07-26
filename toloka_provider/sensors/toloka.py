@@ -1,15 +1,11 @@
 """
 Module contains sensor to wait pool finishing
 """
-from typing import Dict, Union, Callable, Sequence
-import logging
+from typing import Dict, Union, Sequence, Iterable
 
-from airflow.sensors.python import PythonSensor
 from airflow.sensors.base import BaseSensorOperator
-
-from toloka.client import Pool
+from toloka.client import Pool, AppProject, AppBatch
 from toloka.client.analytics_request import CompletionPercentagePoolAnalytics
-from toloka.util._managing_headers import add_headers
 
 from ..hooks.toloka import TolokaHook
 from ..utils import extract_id
@@ -48,3 +44,45 @@ class WaitPoolSensor(BaseSensorOperator):
         self.log.info(f'Pool {pool_id} - {percentage}%')
 
         return pool.is_closed()
+
+
+class WaitAppBatchSensor(BaseSensorOperator):
+    """
+    Wait given App batch until it enters an of poke_on_statuses status.
+
+    :param app_project: Either an `AppProject` object or it's config or an app_project_id value.
+    :param app_project: Either an `AppBatch` object or it's config or a batch_id value.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :param poke_on_statuses: Container of AppBatch.Status
+    """
+
+    template_fields: Sequence[str] = ('app_project', 'batch', 'poke_on_statuses')
+
+    def __init__(
+        self,
+        *,
+        app_project: Union[AppProject, Dict, str],
+        batch: Union[AppBatch, Dict, str],
+        toloka_conn_id: str = 'toloka_default',
+        poke_on_statuses: Iterable[Union[AppBatch.Status, str]] = (AppBatch.Status.COMPLETED,),
+        **kwargs,
+    ) -> None:
+        super().__init__(**kwargs)
+        self.app_project = app_project
+        self.batch = batch
+        self.toloka_conn_id = toloka_conn_id
+        poke_on_statuses_list = []
+        for status in poke_on_statuses:
+            poke_on_statuses_list.append(AppBatch.Status(status))
+        self.poke_on_statuses = poke_on_statuses_list
+
+    def poke(self, context: 'Context') -> bool:
+        app_project_id = extract_id(self.app_project, AppProject)
+        app_batch_id = extract_id(self.batch, AppBatch)
+        toloka_hook = TolokaHook(toloka_conn_id=self.toloka_conn_id)
+        toloka_client = toloka_hook.get_conn()
+
+        batch = toloka_client.get_app_batch(app_project_id, app_batch_id)
+        processed_fraction = batch.items_processed_count / batch.items_count if batch.items_count > 0 else 0.
+        self.log.info(f'Pool {batch.id} - {processed_fraction * 100}%')
+        return batch.status in self.poke_on_statuses

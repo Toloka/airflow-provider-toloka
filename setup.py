@@ -24,7 +24,7 @@ setup(
     python_requires='>=3.7.0',
     install_requires=[
         'apache-airflow>=2.1.0',
-        'toloka-kit>=0.1.24',
+        'toloka-kit>=1.0.0rc1',
     ],
     include_package_data=True,
     project_urls={
