@@ -81,7 +81,7 @@ def dag_for_test_wait_app_batch(new_app_batch_map, completed_app_batch_map):
         app_batch = prepare_app_batch()
         _waiting = tlk_sensors.WaitAppBatchSensor(
             task_id='wait_app_batch', app_project='321', batch=app_batch,
-            toloka_conn_id='toloka_conn', poke_on_statuses=['COMPLETED'],
+            toloka_conn_id='toloka_conn', success_on_statuses=['COMPLETED'],
             poke_interval=0.1,
         )
         _check = check_app_batch(batch=app_batch)
