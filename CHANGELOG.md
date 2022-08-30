@@ -1,3 +1,9 @@
+0.0.7
+-------------------
+* Add `WaitAppBatchSensor` for waiting app batches
+* Add `test_connection` method to `TolokaHook` for testing connection from UI
+* Add `extra__toloka__url` field for setting `TolokaClient`'s url
+
 0.0.6
 -------------------
 * Update Dockerfile in example. 
