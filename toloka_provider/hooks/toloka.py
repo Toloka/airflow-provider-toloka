@@ -32,9 +32,9 @@ class TolokaHook(BaseHook):
 
         conn = self.get_connection(toloka_conn_id)
         extras = conn.extra_dejson
-        self.toloka_url = extras.get("extra__toloka__url") or None
-        self.toloka_token = extras.get("extra__toloka__token") or None
-        self.toloka_env = extras.get("extra__toloka__environment") or None
+        self.toloka_url = extras.get('extra__toloka__url')
+        self.toloka_token = extras.get('extra__toloka__token')
+        self.toloka_env = extras.get('extra__toloka__environment')
         self.get_conn()
 
     def get_conn(self) -> TolokaClient:
