@@ -32,8 +32,9 @@ class TolokaHook(BaseHook):
 
         conn = self.get_connection(toloka_conn_id)
         extras = conn.extra_dejson
+        self.toloka_url = extras.get("extra__toloka__url") or None
         self.toloka_token = extras.get("extra__toloka__token") or None
-        self.toloka_env = extras.get("extra__toloka__environment") or 'production'
+        self.toloka_env = extras.get("extra__toloka__environment") or None
         self.get_conn()
 
     def get_conn(self) -> TolokaClient:
@@ -42,15 +43,18 @@ class TolokaHook(BaseHook):
             self.log.debug('Creating toloka client for conn_id: %s', self.toloka_conn_id)
 
             if not self.toloka_conn_id:
-                raise AirflowException('Failed to create toloka client. No toloka_conn_id provided')
+                raise AirflowException(
+                    'Failed to create toloka client. No toloka_conn_id provided')
 
             try:
                 self.client = TolokaClient(
+                    url=self.toloka_url,
                     token=self.toloka_token,
                     environment=self.toloka_env,
                 )
             except ValueError as toloka_error:
-                raise AirflowException(f'Failed to create toloka client, toloka error: {str(toloka_error)}')
+                raise AirflowException(
+                    f'Failed to create toloka client, toloka error: {str(toloka_error)}')
             except Exception as e:
                 raise AirflowException(f'Failed to create toloka client, error: {str(e)}')
 
@@ -62,10 +66,6 @@ class TolokaHook(BaseHook):
         from flask_babel import lazy_gettext
         from wtforms import PasswordField, StringField, validators, ValidationError
 
-        def check_env(form, field):
-            if field.data.lower() not in ['production', 'sandbox']:
-                raise ValidationError('Environment field must be production or sandbox')
-
         return {
             'extra__toloka__token': PasswordField(
                 lazy_gettext('Token'),
@@ -74,7 +74,12 @@ class TolokaHook(BaseHook):
             ),
             'extra__toloka__environment': StringField(
                 lazy_gettext('Environment'),
-                [check_env],
+                [],
+                widget=BS3TextFieldWidget(),
+            ),
+            'extra__toloka__url': StringField(
+                lazy_gettext('Url'),
+                [],
                 widget=BS3TextFieldWidget(),
             ),
         }
@@ -87,5 +92,20 @@ class TolokaHook(BaseHook):
             'placeholders': {
                 'extra__toloka__token': 'Toloka OAuth token',
                 'extra__toloka__environment': 'production or sandbox',
+                'extra__toloka__url': 'Toloka host',
             },
         }
+
+    def test_connection(self):
+        """Test the Toloka connectivity from UI"""
+
+        try:
+            client = TolokaHook(self.toloka_conn_id).get_conn()
+            client.get_requester()
+            status = True
+            message = 'Connection successfully tested'
+        except Exception as error:
+            status = False
+            message = str(error)
+
+        return status, message
