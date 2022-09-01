@@ -148,7 +148,7 @@ def pool_map():
 
 
 @pytest.fixture
-def pool_map_with_readonly(pool_map):
+def pool_map_with_readonly_open(pool_map):
     return {
         **pool_map,
         'id': '21',
@@ -158,6 +158,36 @@ def pool_map_with_readonly(pool_map):
         'last_started': '2015-12-17T08:00:01',
         'last_stopped': '2015-12-18T08:00:01',
         'last_close_reason': 'MANUAL',
+        'status': 'OPEN',
+    }
+
+
+@pytest.fixture
+def pool_map_with_readonly_manual(pool_map):
+    return {
+        **pool_map,
+        'id': '21',
+        'owner': {'id': 'requester-1', 'myself': True, 'company_id': '1'},
+        'type': 'REGULAR',
+        'created': '2015-12-16T12:55:01',
+        'last_started': '2015-12-17T08:00:01',
+        'last_stopped': '2015-12-18T08:00:01',
+        'last_close_reason': 'MANUAL',
+        'status': 'CLOSED',
+    }
+
+
+@pytest.fixture
+def pool_map_with_readonly_completed(pool_map):
+    return {
+        **pool_map,
+        'id': '21',
+        'owner': {'id': 'requester-1', 'myself': True, 'company_id': '1'},
+        'type': 'REGULAR',
+        'created': '2015-12-16T12:55:01',
+        'last_started': '2015-12-17T08:00:01',
+        'last_stopped': '2015-12-18T08:00:01',
+        'last_close_reason': 'COMPLETED',
         'status': 'CLOSED',
     }
 
@@ -185,7 +215,7 @@ def success_answer_map():
                                     'name': 'submitted_assignments_count',
                                     'subject': 'POOL',
                                     'subject_id': '26807107'
-                                },
+                            },
                             'finished': '2021-08-24T06:30:08.923461'
                         },
                     ]
@@ -194,27 +224,32 @@ def success_answer_map():
 
 
 @pytest.fixture
-def dag_for_test_wait_closed_pool(pool_map_with_readonly):
+def dag_for_test_wait_closed_pool(pool_map_with_readonly_open, pool_map_with_readonly_completed):
 
     @task
     def prepare_pool():
-        return pool_map_with_readonly
+        return pool_map_with_readonly_open
 
     @task
     def check_pool(pool):
-        assert Pool.from_json(pool) == structure(pool_map_with_readonly, Pool)
+        assert Pool.from_json(pool) == structure(pool_map_with_readonly_completed, Pool)
 
     @dag(schedule_interval='@once', default_args={'start_date': DATA_INTERVAL_START})
     def dag_wait_pool():
         pool = prepare_pool()
-        _waiting = tlk_sensors.WaitPoolSensor(task_id='wait_pool', toloka_pool=pool, toloka_conn_id='toloka_conn')
+        _waiting = tlk_sensors.WaitPoolSensor(
+            task_id='wait_pool', toloka_pool=pool, toloka_conn_id='toloka_conn',
+            success_on_reasons=('COMPLETED',), poke_interval=0.1,)
         _check = check_pool(pool)
         _waiting >> _check
 
     return dag_wait_pool()
 
 
-def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map_with_readonly, success_answer_map, toloka_url, toloka_api_url):
+def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool,
+                          pool_map_with_readonly_open, pool_map_with_readonly_manual,
+                          pool_map_with_readonly_completed, success_answer_map, toloka_url,
+                          toloka_api_url):
     conn = Connection(
         conn_id='toloka_conn',
         conn_type='toloka',
@@ -224,12 +259,20 @@ def test_wait_closed_pool(requests_mock, dag_for_test_wait_closed_pool, pool_map
         },
     )
     conn_uri = conn.get_uri()
+    requests_count = 0
 
     def task_suites(request, context):
         return success_answer_map
 
     def pool(request, context):
-        return pool_map_with_readonly
+        nonlocal requests_count
+        requests_count += 1
+        if requests_count == 1:
+            return pool_map_with_readonly_open
+        elif requests_count == 2:
+            return pool_map_with_readonly_manual
+        else:
+            return pool_map_with_readonly_completed
 
     requests_mock.post(f'{toloka_api_url}/staging/analytics-2', json=task_suites)
     requests_mock.get(f'{toloka_url}/pools/21', json=pool)
