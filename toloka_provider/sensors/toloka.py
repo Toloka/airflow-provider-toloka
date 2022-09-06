@@ -15,7 +15,7 @@ class WaitPoolSensor(BaseSensorOperator):
     """
     Wait given pool until close.
 
-    :param pool: Either a `Pool` object or it's config or a pool_id value.
+    :param toloka_pool: Either a `Pool` object or it's config or a pool_id value.
     :param toloka_conn_id: Airflow connection with toloka credentials.
     :param success_on_reasons: Container of Pool.CloseReason. `WaitPoolSensor`
         will wait until both `pool` becomes closed and `success_on_reasons`
@@ -39,6 +39,7 @@ class WaitPoolSensor(BaseSensorOperator):
             reason) for reason in success_on_reasons] if success_on_reasons is not None else list(Pool.CloseReason)
 
     def poke(self, context: 'Context') -> bool:
+        """Checks if pool is closed"""
         pool_id = extract_id(self.toloka_pool, Pool)
         toloka_hook = TolokaHook(toloka_conn_id=self.toloka_conn_id)
         toloka_client = toloka_hook.get_conn()
@@ -81,6 +82,7 @@ class WaitAppBatchSensor(BaseSensorOperator):
         self.success_on_statuses = [AppBatch.Status(status) for status in success_on_statuses]
 
     def poke(self, context: 'Context') -> bool:
+        """Checks if batch status in success_on_statuses"""
         app_project_id = extract_id(self.app_project, AppProject)
         app_batch_id = extract_id(self.batch, AppBatch)
         toloka_hook = TolokaHook(toloka_conn_id=self.toloka_conn_id)

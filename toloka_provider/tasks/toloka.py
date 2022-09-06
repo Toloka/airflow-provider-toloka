@@ -25,11 +25,11 @@ def create_project(
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Project, str]:
     """Create a Project object from given config.
-    Args:
-        obj: Either a `Project` object itself or a config to make a `Project`.
-        toloka_conn_id: Airflow connection with toloka credentials.
-    Returns:
-        Project object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    :param obj: Either a `Project` object itself or a config to make a `Project`.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Project object if custom XCom backend is configured or its JSON serialized version otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -48,12 +48,12 @@ def create_exam_pool(
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Training, str]:
     """Create a Training pool object from given config.
-    Args:
-        obj: Either a `Training` object itself or a config to make a `Training`.
-        project: Project to assign a training pool to. May pass either an object, config or project_id.
-        toloka_conn_id: Airflow connection with toloka credentials.
-    Returns:
-        Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    :param obj: Either a `Training` object itself or a config to make a `Training`.
+    :param project: Project to assign a training pool to. May pass either an object, config or project_id.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -76,17 +76,17 @@ def create_pool(
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Pool, str]:
     """Create a Pool object from given config.
-    Args:
-        obj: Either a `Pool` object itself or a config to make a `Pool`.
-        project: Project to assign a pool to. May pass either an object, config or project_id.
-        exam_pool: Related training pool. May pass either an object, config or pool_id.
-        expiration: Expiration setting. May pass any of:
-            * `None` if this setting is already present;
-            * `datetime` object to set exact datetime;
-            * `timedelta` to set expiration related to the current time.
-        toloka_conn_id: Airflow connection with toloka credentials.
-    Returns:
-        Pool object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    :param obj: Either a `Pool` object itself or a config to make a `Pool`.
+    :param project: Project to assign a pool to. May pass either an object, config or project_id.
+    :param exam_pool: Related training pool. May pass either an object, config or pool_id.
+    :param expiration: Expiration setting. May pass any of:
+        * `None` if this setting is already present;
+        * `datetime` object to set exact datetime;
+        * `timedelta` to set expiration related to the current time.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Pool object if custom XCom backend is configured or its JSON serialized version otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -114,12 +114,13 @@ def create_tasks(
     additional_args: Optional[Dict] = None,
 ) -> None:
     """Create a list of tasks for a given pool.
-    Args:
-        tasks: List of either a `Task` objects or a task conofigurations.
-        pool: Allow to set tasks pool if it's not present in the tasks themselves.
-            May be either a `Pool` or `Training` object or config or a pool_id value.
-        toloka_conn_id: Airflow connection with toloka credentials.
-        additional_args: Any other args presented in `toloka.client.task.CreateTasksParameters`.
+
+    :param tasks: List of either a `Task` objects or a task conofigurations.
+    :param pool: Allow to set tasks pool if it's not present in the tasks themselves.
+        May be either a `Pool` or `Training` object or config or a pool_id value.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :param additional_args: Any other args presented in `toloka.client.task.CreateTasksParameters`.
+    
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -147,11 +148,11 @@ def open_pool(
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Pool, str]:
     """Open given pool.
-    Args:
-        obj: Pool id or `Pool` object of it's config.
-        toloka_conn_id: Airflow connection with toloka credentials.
-    Returns:
-        Pool object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    :param obj: Pool id or `Pool` object of it's config.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Pool object if custom XCom backend is configured or its JSON serialized version otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -170,11 +171,11 @@ def open_exam_pool(
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Pool, str]:
     """Open given training pool.
-    Args:
-        obj: Training pool_id or `Training` object of it's config.
-        toloka_conn_id: Airflow connection with toloka credentials.
-    Returns:
-        Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    :param obj: Training pool_id or `Training` object of it's config.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
@@ -195,13 +196,13 @@ def get_assignments(
     additional_args: Optional[Dict] = None,
 ) -> List[Union[Assignment, str]]:
     """Get all assignments of selected status from pool.
-    Args:
-        pool: Either a `Pool` object or it's config or a pool_id.
-        status: A status or a list of statuses to get. All statuses (None) by default.
-        toloka_conn_id: Airflow connection with toloka credentials.
-        additional_args: Any other args presented in `toloka.client.search_requests.AssignmentSearchRequest`.
-    Returns:
-        List of `Assignment` objects if custom XCom backend is configured or of its JSON serialized versions otherwise.
+
+    :param pool: Either a `Pool` object or it's config or a pool_id.
+    :param status: A status or a list of statuses to get. All statuses (None) by default.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :param additional_args: Any other args presented in `toloka.client.search_requests.AssignmentSearchRequest`.
+    :returns: List of `Assignment` objects if custom XCom backend is configured or of its JSON serialized versions otherwise.
+
     """
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
