@@ -12,6 +12,7 @@ T = TypeVar('T')
 
 
 def serialize_if_default_xcom_backend(func):
+    """Call to_json method to serialize toloka objects to pass through base xcom"""
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -30,6 +31,8 @@ def serialize_if_default_xcom_backend(func):
 
 
 def structure_from_conf(obj: Any, cl: Type[T]) -> T:
+    """Create toloka object from bytes or json config"""
+
     if isinstance(obj, cl):
         return obj
     if isinstance(obj, bytes):
@@ -44,6 +47,8 @@ def structure_from_conf(obj: Any, cl: Type[T]) -> T:
 
 
 def extract_id(obj: Any, cl: Type[T]) -> str:
+    """Extracts id attr from toloka objects or its config"""
+
     if isinstance(obj, str):
         try:
             obj = json.loads(obj, parse_float=Decimal)

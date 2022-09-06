@@ -62,6 +62,7 @@ class TolokaHook(BaseHook):
 
     @staticmethod
     def get_connection_form_widgets() -> Dict[str, Any]:
+        """Adds fields for connection in UI"""
         from flask_appbuilder.fieldwidgets import BS3PasswordFieldWidget, BS3TextFieldWidget
         from flask_babel import lazy_gettext
         from wtforms import PasswordField, StringField, validators, ValidationError
@@ -86,6 +87,7 @@ class TolokaHook(BaseHook):
 
     @staticmethod
     def get_ui_field_behaviour() -> Dict[str, Any]:
+        """Hides unused fields in UI"""
         return {
             'hidden_fields': ['port', 'host', 'login', 'schema', 'extra', 'password'],
             'relabeling': {},

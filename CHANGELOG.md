@@ -1,3 +1,8 @@
+0.0.8
+-------------------
+* Add `success_on_reasons` param to `WaitAppBatchSensor` init
+* Format all docs according to sphinx standard
+
 0.0.7
 -------------------
 * Add `WaitAppBatchSensor` for waiting app batches
