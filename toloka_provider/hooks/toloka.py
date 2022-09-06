@@ -14,9 +14,9 @@ class TolokaHook(BaseHook):
     """
     Hook to interact with Toloka.
 
-    Performs a connection to Toloka and retrieves client.    
+    Performs a connection to Toloka and retrieves client.
 
-    :param toloka_conn_id: Airflow Connection with OAuth token for Toloka. 
+    :param toloka_conn_id: Airflow Connection with OAuth token for Toloka.
         You can learn more about how to get it [here](https://toloka.ai/docs/api/concepts/access.html#access__token).
     """
 
