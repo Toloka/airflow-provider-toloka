@@ -20,7 +20,7 @@ A good way to start is to follow the [example](https://github.com/Toloka/airflow
 
 `TolokaHook`
 --------------
-`TolokaHook` is used for getting toloka OAuth token and creating [`TolokaClient`](https://toloka.ai/en/docs/toloka-kit/reference/toloka.client.TolokaClient) with it. 
+`TolokaHook` is used for getting toloka OAuth token from Airflow Connection and creating [`TolokaClient`](https://toloka.ai/en/docs/toloka-kit/reference/toloka.client.TolokaClient) with it. 
 You can get `TolokaClient` from `TolokaHook` by calling `get_conn()` method.
 
 To make an appropriate Airflow Connection you need to create it in the Airflow Connections UI with following parameters:
@@ -39,10 +39,11 @@ Tasks and Sensors
 --------------
 There are several tasks and sensors that give you easy way to interact with Toloka from Airflow DAGs.
 Creating a project and a pool, adding tasks and getting assignments are among them.
-You can easily create your own task using `TolokaHook` if it is beyond the scope of implemented ones.
-And it would be nice to have your pull request with updates.
+You can easily create your own task or operator using `TolokaHook` if it is beyond the scope of implemented ones: 
+just get toloka client through toloka hook: `toloka_client = TolokaHook().get_conn()` and 
+use all power of [Toloka-Kit](https://github.com/Toloka/toloka-kit).
 
-Check out our [example](https://github.com/Toloka/airflow-provider-toloka/blob/main/toloka_provider/example_dags/text_classification.ipynb) to see tasks and sensors in the battlefield.
+Also, it would be nice to have your pull request with updates.
 
 Useful Links
 --------------
