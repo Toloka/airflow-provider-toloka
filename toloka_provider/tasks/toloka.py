@@ -4,6 +4,7 @@ Module contains airflow tasks to make basic manipulations in Toloka such as proj
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Union
+import warnings
 
 from airflow.decorators import task
 
@@ -41,7 +42,7 @@ def create_project(
 @task
 @serialize_if_default_xcom_backend
 @add_headers('airflow')
-def create_exam_pool(
+def create_training_pool(
     obj: Union[Training, Dict, str, bytes],
     *,
     project: Union[Project, str, None] = None,
@@ -67,11 +68,43 @@ def create_exam_pool(
 @task
 @serialize_if_default_xcom_backend
 @add_headers('airflow')
+def create_exam_pool(
+    obj: Union[Training, Dict, str, bytes],
+    *,
+    project: Union[Project, str, None] = None,
+    toloka_conn_id: str = 'toloka_default',
+) -> Union[Training, str]:
+    """Create a Training pool object from given config.
+
+    :param obj: Either a `Training` object itself or a config to make a `Training`.
+    :param project: Project to assign a training pool to. May pass either an object, config or project_id.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    """
+    warnings.warn(
+        """This function is deprecated. It will be deleted in v1.0.0.
+        Please use `toloka_provider.tasks.toloka.create_training_pool` instead""",
+    )
+
+    toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
+    toloka_client = toloka_hook.get_conn()
+
+    obj = structure_from_conf(obj, Training)
+    if project is not None:
+        obj.project_id = extract_id(project, Project)
+    return toloka_client.create_training(obj)
+
+
+@task
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def create_pool(
     obj: Union[Pool, Dict, str, bytes],
     *,
     project: Union[Project, str, None] = None,
     exam_pool: Union[Training, str, None] = None,
+    training_pool: Union[Training, str, None] = None,
     expiration: Union[datetime, timedelta, None] = None,
     toloka_conn_id: str = 'toloka_default',
 ) -> Union[Pool, str]:
@@ -79,7 +112,8 @@ def create_pool(
 
     :param obj: Either a `Pool` object itself or a config to make a `Pool`.
     :param project: Project to assign a pool to. May pass either an object, config or project_id.
-    :param exam_pool: Related training pool. May pass either an object, config or pool_id.
+    :param exam_pool: Deprecated param, use `training_pool` instead.
+    :param training_pool: Related training pool. May pass either an object, config or pool_id.
     :param expiration: Expiration setting. May pass any of:
         * `None` if this setting is already present;
         * `datetime` object to set exact datetime;
@@ -88,16 +122,21 @@ def create_pool(
     :returns: Pool object if custom XCom backend is configured or its JSON serialized version otherwise.
 
     """
+    warnings.warn(
+        """`exam_pool` is deprecated param. It will be deleted in v1.0.0.
+        Please use `training_pool` instead"""
+    )
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 
     obj = structure_from_conf(obj, Pool)
     if project is not None:
         obj.project_id = extract_id(project, Project)
-    if exam_pool:
+    training_pool = training_pool or exam_pool
+    if training_pool:
         if obj.quality_control.training_requirement is None:
-            raise ValueError('pool.quality_control.training_requirement should be set before exam_pool assignment')
-        obj.quality_control.training_requirement.training_pool_id = extract_id(exam_pool, Training)
+            raise ValueError('pool.quality_control.training_requirement should be set before training_pool assignment')
+        obj.quality_control.training_requirement.training_pool_id = extract_id(training_pool, Training)
     if expiration:
         obj.will_expire = datetime.now() + expiration if isinstance(expiration, timedelta) else expiration
     return toloka_client.create_pool(obj)
@@ -165,6 +204,29 @@ def open_pool(
 @task
 @serialize_if_default_xcom_backend
 @add_headers('airflow')
+def open_training_pool(
+    obj: Union[Training, str],
+    *,
+    toloka_conn_id: str = 'toloka_default',
+) -> Union[Pool, str]:
+    """Open given training pool.
+
+    :param obj: Training pool_id or `Training` object of it's config.
+    :param toloka_conn_id: Airflow connection with toloka credentials.
+    :returns: Training object if custom XCom backend is configured or its JSON serialized version otherwise.
+
+    """
+    toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
+    toloka_client = toloka_hook.get_conn()
+
+    training = structure_from_conf(obj, Training)
+    training_id = extract_id(training, Training)
+    return toloka_client.open_training(training_id)
+
+
+@task
+@serialize_if_default_xcom_backend
+@add_headers('airflow')
 def open_exam_pool(
     obj: Union[Training, str],
     *,
@@ -177,6 +239,11 @@ def open_exam_pool(
     :returns: Training object if custom XCom backend is configured or its JSON serialized version otherwise.
 
     """
+    warnings.warn(
+        """This function is deprecated. It will be deleted in v1.0.0.
+        Please use `toloka_provider.tasks.toloka.open_training_pool` instead""",
+    )
+
     toloka_hook = TolokaHook(toloka_conn_id=toloka_conn_id)
     toloka_client = toloka_hook.get_conn()
 

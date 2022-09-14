@@ -114,8 +114,8 @@ def text_classification():
         'https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/configs/pool.json')
 
     project = tlk_tasks.create_project(project_conf)
-    exam = tlk_tasks.create_exam_pool(exam_conf, project=project)
-    pool = tlk_tasks.create_pool(pool_conf, project=project, exam_pool=exam, expiration=timedelta(days=1))
+    exam = tlk_tasks.create_training_pool(exam_conf, project=project)
+    pool = tlk_tasks.create_pool(pool_conf, project=project, training_pool=exam, expiration=timedelta(days=1))
 
     dataset = prepare_datasets(
         unlabeled_url='https://raw.githubusercontent.com/Toloka/airflow-provider-toloka/main/toloka_provider/example_dags/data/not_known.csv',
